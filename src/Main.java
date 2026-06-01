@@ -161,25 +161,25 @@ public class Main {
     }
     static String processInThreads(List<String> powtorzone, int iloscW, boolean odszyfruj) throws Exception {
         iloscW = Math.min(iloscW, Math.max(1, powtorzone.size()));
-        ExecutorService ekipa = Executors.newFixedThreadPool(iloscW);
-        List<Future<String>> kwity = new ArrayList<>();
+        ExecutorService executor = Executors.newFixedThreadPool(iloscW);
+        List<Future<String>> pula = new ArrayList<>();
         int rozmiar = (powtorzone.size() + iloscW - 1) / iloscW;
 
         for (int i = 0; i < powtorzone.size(); i += rozmiar) {
             int odKad = i;
             int doKad = Math.min(i + rozmiar, powtorzone.size());
             Callable<String> zadanie = () -> processPart(powtorzone.subList(odKad, doKad), odszyfruj);
-            kwity.add(ekipa.submit(zadanie));
+            pula.add(executor.submit(zadanie));
         }
 
         StringBuilder result = new StringBuilder();
 
 
-        for (Future<String> kwit : kwity) {
-            result.append(kwit.get());
+        for (Future<String> x : pula) {
+            result.append(x.get());
         }
 
-        ekipa.shutdown();
+        executor.shutdown();
         return result.toString();
     }
 
