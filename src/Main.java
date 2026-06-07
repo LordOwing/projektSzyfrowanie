@@ -31,8 +31,11 @@ public class Main {
         String wybor = skaner.nextLine().trim().toLowerCase();
 
         System.out.print("Podaj liczbe watkow: ");
-        int iloscW = Math.max(1, Integer.parseInt(skaner.nextLine()));
-
+        int podana = Integer.parseInt(skaner.nextLine());
+        if (podana <= 0) {
+            System.out.println("Liczba watkow musi byc dodatnia. Uzyje 1.");
+        }
+        int iloscW = Math.max(1, podana);
         buildTable(haslo);
 
         String zawartosc = readFile(sciezkaWej);
@@ -162,25 +165,25 @@ public class Main {
     static String processInThreads(List<String> powtorzone, int iloscW, boolean odszyfruj) throws Exception {
         iloscW = Math.min(iloscW, Math.max(1, powtorzone.size()));
         ExecutorService executor = Executors.newFixedThreadPool(iloscW);
-        List<Future<String>> pula = new ArrayList<>();
-        int rozmiar = (powtorzone.size() + iloscW - 1) / iloscW;
+        try {
+            List<Future<String>> pula = new ArrayList<>();
+            int rozmiar = (powtorzone.size() + iloscW - 1) / iloscW;
 
-        for (int i = 0; i < powtorzone.size(); i += rozmiar) {
-            int odKad = i;
-            int doKad = Math.min(i + rozmiar, powtorzone.size());
-            Callable<String> zadanie = () -> processPart(powtorzone.subList(odKad, doKad), odszyfruj);
-            pula.add(executor.submit(zadanie));
+            for (int i = 0; i < powtorzone.size(); i += rozmiar) {
+                int odKad = i;
+                int doKad = Math.min(i + rozmiar, powtorzone.size());
+                Callable<String> zadanie = () -> processPart(powtorzone.subList(odKad, doKad), odszyfruj);
+                pula.add(executor.submit(zadanie));
+            }
+
+            StringBuilder result = new StringBuilder();
+            for (Future<String> x : pula) {
+                result.append(x.get());
+            }
+            return result.toString();
+        } finally {
+            executor.shutdown();
         }
-
-        StringBuilder result = new StringBuilder();
-
-
-        for (Future<String> x : pula) {
-            result.append(x.get());
-        }
-
-        executor.shutdown();
-        return result.toString();
     }
 
 
